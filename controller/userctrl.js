@@ -5,6 +5,10 @@ const conn = require('../config/dbConnect'); // Your database connection file
 const { generateToken } = require('../config/jwtToken');
 
 const Score = require('../models/scoremodel');
+<<<<<<< HEAD
+const InductionContent = require('../models/inductioncontmodel');
+=======
+>>>>>>> d8940bb35a9678bb1a54ec07b657ca85095ab237
 
 // Controller methods
 
@@ -144,6 +148,11 @@ const getscore = asyncHandler(async (req, res) => {
       }
 });
 
+<<<<<<< HEAD
+
+
+=======
+>>>>>>> d8940bb35a9678bb1a54ec07b657ca85095ab237
 // Export all controller functions
 module.exports = {
     getEmail,
@@ -152,4 +161,8 @@ module.exports = {
     totalusers,
     score,
     getscore,
+<<<<<<< HEAD
+    
+=======
+>>>>>>> d8940bb35a9678bb1a54ec07b657ca85095ab237
 };
