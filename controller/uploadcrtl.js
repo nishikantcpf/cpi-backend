@@ -3,7 +3,14 @@ const asyncHandler = require("express-async-handler");
 const User = require('../models/usermodel');
 
 
+<<<<<<< HEAD
 
+=======
+// const {
+//     cloudinaryUploadImg,
+//     cloudinaryDeleteImg,
+// } = require("../utils/cloudinary");
+>>>>>>> d8940bb35a9678bb1a54ec07b657ca85095ab237
 const uploadImagesname = asyncHandler(async (req, res) => {
 
     // res.status(200).json("File has been uploaded");

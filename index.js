@@ -9,7 +9,11 @@ const authRouter = require('./routes/authRoute');
 const uploadRouter = require('./routes/uploadRoute');
 const { notFound, errorHandler } = require('./middlewares/errorHandler');
 const mdbConnect = require('./config/mdbConnect');
+<<<<<<< HEAD
 const fs = require("fs");
+=======
+
+>>>>>>> d8940bb35a9678bb1a54ec07b657ca85095ab237
 const app = express();
 const PORT = process.env.PORT;
 mdbConnect();
@@ -28,12 +32,33 @@ app.use(cookieParser());
 // Static file access
 app.use("/api/images", express.static(path.join(__dirname, "/images")));
 app.use("/image", express.static(path.join(__dirname, "/image")));
+<<<<<<< HEAD
 app.use("/uploads/videos", express.static(path.join(__dirname, "/uploads/videos")));
 if (!fs.existsSync(path.join(__dirname, "/image"))) {
     fs.mkdirSync(path.join(__dirname, "/image"));
 }
 
 
+=======
+
+// Multer for file uploads
+var maxSize = 20 * 1024 * 1024; // 20MB
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, "./image");
+    },
+    filename: (req, file, cb) => {
+        cb(null, req.body.name);
+    },
+});
+
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: maxSize }
+});
+
+// Routes
+>>>>>>> d8940bb35a9678bb1a54ec07b657ca85095ab237
 app.use("/api/user", authRouter);
 app.use("/api/upload", uploadRouter);
 
@@ -46,6 +71,7 @@ app.use("/", (req, res) => {
 app.use(notFound);
 app.use(errorHandler);
 
+<<<<<<< HEAD
 // temp
 // let videos = [
 //     {
@@ -94,6 +120,8 @@ app.use(errorHandler);
 
 // temp end
 
+=======
+>>>>>>> d8940bb35a9678bb1a54ec07b657ca85095ab237
 // Server listening
 app.listen(PORT, () => {
     console.log(`Server is running at PORT ${PORT}`);
