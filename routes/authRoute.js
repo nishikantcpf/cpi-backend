@@ -2,10 +2,9 @@
 
 const express = require("express");
 const { getEmail, totalusers, getContact, checkEmail, score, getscore } = require("../controller/userctrl");
-<<<<<<< HEAD
-const { create_content, get_content_part1, get_content_part2, get_content, deleteInductionContent } = require("../controller/inductionctrl");
-=======
->>>>>>> d8940bb35a9678bb1a54ec07b657ca85095ab237
+const { create_content, get_content_part1,  get_content, deleteInductionContent, getDataPartById, meetingsession, getmeetingsession, getmeetingsessionById, sendEmail, sendotp, create_feedback, register_session, userprogress, userprogressadd, getDataPartById_quize,  quiz_completed, genrate_invitation_code, skip_part2 } = require("../controller/inductionctrl");
+const { find_all_data, listUsersByState } = require("../controller/adminctrl");
+
 
 const router = express.Router();
 
@@ -15,22 +14,38 @@ router.get("/totalusers", totalusers);
 router.get("/getContact", getContact);
 router.post("/checkemail", checkEmail);
 router.post("/score",score);
-<<<<<<< HEAD
 router.get("/getscore/:id",getscore);
-
-
 
 
 // induction Router
 
-router.post("/induction_content",create_content)
-router.get("/get_content",get_content)
+router.post("/induction_content",create_content);
+router.get("/get_content",get_content);
 router.get("/get_content/:id",get_content_part1);
 router.delete("/deleteInductionContent/:id",deleteInductionContent);
 // router.get("/get_content2/:s_no",get_content_part2);
-=======
-router.get("/getscore/:id",getscore)
+router.get("/getquestion/:id",getDataPartById);
+router.post("/sessioncreate",meetingsession);
+router.get("/getsession",getmeetingsession);
+router.get("/getmeetingsessionById/:id",getmeetingsessionById);
+router.post("/sendEmail",sendEmail);
+router.post("/sendotp",sendotp);
+router.post("/create_feedback",create_feedback);
+router.post("/register_session",register_session);
+router.post("/userprogressadd",userprogressadd);
+router.post("/userprogress",userprogress);
+router.get("/getquestion_quize/:id",getDataPartById_quize)
+router.post("/quiz_completed",quiz_completed)
+router.post("/genrate_invitation_code",genrate_invitation_code);
+router.post("/skip_part2",skip_part2);
 
->>>>>>> d8940bb35a9678bb1a54ec07b657ca85095ab237
+
+
+
+// Admin route
+router.post("/find_all_data",find_all_data);
+router.get("/liststate",listUsersByState);
+
+
 // Export the router
 module.exports = router;

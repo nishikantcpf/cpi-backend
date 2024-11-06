@@ -1,15 +1,22 @@
+// models/Question.js
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
-const questionSchema = new mongoose.Schema({
-  que_id: { type: Number, required: true },
-  que: { type: String, required: true },
-  option1: { type: String, required: true },
-  option2: { type: String, required: true },
-  option3: { type: String, required: true },
-  option4: { type: String, required: true },
-  correct_answer: { type: String, required: true },
+// Question schema to represent a single question, its options, and answer
+const QuestionSchema = new Schema({
+  question: { type: String, required: true },
+  options: [{ type: String, required: true }],
+  answer: { type: String, required: true }
 });
 
-const Question = mongoose.model('Question', questionSchema);
+// Schema for each data part (e.g., part1, part2, final)
+const DataPartSchema = new Schema({
+  // partId: { type: String, required: true },
+  name: { type: String, required: true },
+  data: [QuestionSchema] // Array of questions
+});
 
-module.exports = Question;
+
+module.exports = mongoose.model("Quize", DataPartSchema);
+// Export the model
+

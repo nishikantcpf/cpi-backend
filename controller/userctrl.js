@@ -5,10 +5,7 @@ const conn = require('../config/dbConnect'); // Your database connection file
 const { generateToken } = require('../config/jwtToken');
 
 const Score = require('../models/scoremodel');
-<<<<<<< HEAD
 const InductionContent = require('../models/inductioncontmodel');
-=======
->>>>>>> d8940bb35a9678bb1a54ec07b657ca85095ab237
 
 // Controller methods
 
@@ -25,81 +22,138 @@ const getEmail = asyncHandler(async (req, res) => {
 });
 
 // Handler for checking email by phone number it login
+// const checkEmail1 = asyncHandler(async (req, res) => {
+//     const { phone, email } = req.body;
+    
+
+//     if(phone!=""){
+//         try {
+//             // Salesforce SOQL query
+//             const query = `SELECT Id, Name FROM Lead WHERE phone='${phone}'`;
+        
+//             conn.query(query, (err, result) => {
+//                 if (err) {
+//                     console.error("Salesforce query error:", err); // Log the error
+//                     return res.status(500).json({ message: "Internal server error" });
+//                 }
+        
+//                 // console.log("Salesforce Query Result:", result); // Log the Salesforce result
+        
+//                 // Ensure that the query returns records and totalSize is greater than 0
+//                 if (result && result.totalSize > 0 && result.records.length > 0) {
+//                     const finduserid = result.records[0].Id;
+//                     const findusername = result.records[0].Name;
+        
+//                     // Send response with token
+//                     return res.json({
+//                         result,
+//                         success: true,
+//                         token: generateToken(finduserid, findusername),
+//                     });
+//                 } else {
+//                     // No matching record found
+//                     return res.status(400).json({ message: "Invalid credentials" });
+//                 }
+//             });
+//         } catch (error) {
+//             // Catch any errors outside of the query execution
+//             console.error("Catch block error:", error);
+//             return res.status(500).json({ message: error.message });
+//         }
+
+//     }else{
+
+//         try {
+//             // Salesforce SOQL query
+//             const query = `SELECT Id, Name FROM Lead WHERE Email = '${email}'`;
+        
+//             conn.query(query, (err, result) => {
+//                 if (err) {
+//                     console.error("Salesforce query error:", err); // Log the error
+//                     return res.status(500).json({ message: "Internal server error" });
+//                 }
+        
+//                 // console.log("Salesforce Query Result:", result); // Log the Salesforce result
+        
+//                 // Ensure that the query returns records and totalSize is greater than 0
+//                 if (result && result.totalSize > 0 && result.records.length > 0) {
+//                     const finduserid = result.records[0].Id;
+//                     const findusername = result.records[0].Name;
+        
+//                     // Send response with token
+//                     return res.json({
+//                         result,
+//                         success: true,
+//                         token: generateToken(finduserid, findusername),
+//                     });
+//                 } else {
+//                     // No matching record found
+//                     return res.status(400).json({ message: "Invalid credentials" });
+//                 }
+//             });
+//         } catch (error) {
+//             // Catch any errors outside of the query execution
+//             console.error("Catch block error:", error);
+//             return res.status(500).json({ message: error.message });
+//         }
+//     }
+// });
+
+
+
 const checkEmail = asyncHandler(async (req, res) => {
     const { phone, email } = req.body;
-    
 
-    if(phone!=null){
-        try {
-            conn.query(`SELECT Id, Name FROM Lead WHERE phone='${phone}'`, (err, result) => {
-                if (err) throw err;
-                
-                const finduserid=result.records[0].Id;
-                const findusername =result.records[0].Name
-                
-                if (result.totalSize>0) {
-                                // res.send(result);
-                                res.json({
-                                    result,
-                                    success: true,
-                                    token: generateToken(finduserid,findusername),
-                                });
-                            } else {
-                                res.status(400).json({ message: "Invalid credentials" });
-                            }
-                res.send(result);
+    // Function to handle Salesforce queries
+    const querySalesforce = async (field, value) => {
+        return new Promise((resolve, reject) => {
+            const query = `SELECT Id, Name, Email FROM Lead WHERE ${field} = '${value}'`;
+            conn.query(query, (err, result) => {
+                if (err) {
+                    // console.error("Salesforce query error:", err);
+                    return reject("Internal server error");
+                }
+                console.log(result)
+                // Ensure that records exist
+                if (result && result.totalSize > 0 && result.records.length > 0) {
+                    const finduserid = result.records[0].Id;
+                    const findusername = result.records[0].Name;
+                    const finduseremail = result.records[0].Email;
+                    console.log(finduseremail)
+                    return resolve({ finduserid, findusername, finduseremail });
+                } else {
+                    return reject("Invalid credentials");
+                }
             });
-        } catch (error) {
-            res.status(500).json({ message: error.message });
+        });
+    };
+
+    try {
+        let result;
+        
+        // Check if phone is provided, otherwise use email
+        if (phone) {
+            result = await querySalesforce('Phone', phone);
+        } else if (email) {
+            result = await querySalesforce('Email', email);
+        } else {
+            return res.status(400).json({ message: "Phone or Email is required" });
         }
 
-    }else{
-        try {
-            conn.query(`SELECT Id, Name FROM Lead WHERE email='${email}'`, (err, result) => {
-                if (err) throw err;
-               
-                
-                const finduserid=result?.records[0].Id;
-                const findusername =result?.records[0].Name
-                
-                if (result.totalSize>0) {
-                                // res.send(result);
-                                res.json({
-                                    result,
-                                    success: true,
-                                    token: generateToken(finduserid,findusername),
-                                });
-                            } else {
-                                res.status(400).json({ message: "Invalid credentials" });
-                            }
-                res.send(result);
-            });
-        } catch (error) {
-            res.status(500).json({ message: error.message });
+        // If successful, return token and result
+        return res.json({
+            success: true,
+            token: generateToken(result.finduserid, result.findusername, result.finduseremail),
+        });
+
+    } catch (error) {
+        // Handle any errors
+        if (error === "Invalid credentials") {
+            return res.status(400).json({ message: error });
         }
+        return res.status(500).json({ message: error });
     }
-
-    
-    
-    // try {
-    //     const sql = `SELECT Id, Name FROM Lead WHERE phone='07050515676' `;
-    //     conn.query(sql, (err, result) => { 
-    //         if (err) throw err;
-    //         res.send(result); // Use parameterized query
-    //         // if (err) throw err;
-    //         // if (result.length > 0) {
-    //         //     res.send(result);
-    //         // } else {
-    //         //     res.status(400).json({ message: "Invalid credentials" });
-    //         // }
-
-
-    //     });
-    // } catch (error) {
-    //     res.status(500).json({ message: error.message });
-    // }
 });
-
 // Handler for getting contact information
 const getContact = asyncHandler(async (req, res) => {
     try {
@@ -148,11 +202,8 @@ const getscore = asyncHandler(async (req, res) => {
       }
 });
 
-<<<<<<< HEAD
 
 
-=======
->>>>>>> d8940bb35a9678bb1a54ec07b657ca85095ab237
 // Export all controller functions
 module.exports = {
     getEmail,
@@ -161,8 +212,5 @@ module.exports = {
     totalusers,
     score,
     getscore,
-<<<<<<< HEAD
     
-=======
->>>>>>> d8940bb35a9678bb1a54ec07b657ca85095ab237
 };
