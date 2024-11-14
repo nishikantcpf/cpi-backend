@@ -23,7 +23,14 @@ const userprogressSchema = new mongoose.Schema(
           ],
           comptedOnlinesession:{
             type: Boolean, default: false
+          },
+          wishtotraniner:{
+            type: Boolean, default: false
+          },
+          trainerapproved:{
+            type: String , default: 'Not Approved'
           }
+
        
     },
     {

@@ -1,6 +1,9 @@
 const asyncHandler = require('express-async-handler');
 const conn = require('../config/dbConnect');
 const { generateToken } = require('../config/jwtToken');
+const Session = require('../models/Sessionmodel');
+const Feedback = require('../models/feedback');
+const Userprogress = require('../models/userprogressmodel');
 
 
 const find_all_data = asyncHandler(async (req, res) => {
@@ -117,6 +120,162 @@ const listUsersByState = asyncHandler(async (req, res) => {
     }
 });
 
+const deleteSession = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Find the session by ID and delete it
+        const session = await Session.findByIdAndDelete(id);
+
+        if (!session) {
+            return res.status(404).json({ message: 'Session not found' });
+        }
+
+        res.status(200).json({ message: 'Session deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting session:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+const getFeedback = async (req, res) => {
+    try {
+
+          // Retrieve all user progress data
+    const wish_to_trainer = await Userprogress.find();
+    // console.log(wish_to_trainer)
+
+    // Map user progress data to a dictionary with user IDs as keys
+    const wishMap = wish_to_trainer.reduce((map, entry) => {
+        map[entry.uid] = entry.wishtotraniner; // Assuming `uid` is the identifier
+        return map;
+    }, {});
+
+    // Map user progress data to a dictionary with user IDs as keys
+    const approvedMap = wish_to_trainer.reduce((map, entry) => {
+        map[entry.uid] = entry.trainerapproved; // Assuming `uid` is the identifier
+        return map;
+    }, {});
+
+        // Find the session by ID and delete it
+        const feedback = await Feedback.find();
+
+        const ids = feedback.map((value)=>(value.uid))
+        const leadData = await conn.sobject("Lead")
+            .find({ Id: { $in: ids } }) // Query for IDs in the retrieved array
+            .execute();
+            const leadMap = leadData.reduce((map, lead) => {
+                map[lead.Id] = lead.Name;
+                return map;
+            }, {});
+            const mergedData = feedback.map((feedback) => ({
+                ...feedback.toObject(),
+                Name: leadMap[feedback.uid] || 'Not found', // Add name if it exists
+                wishtotraniner: wishMap[feedback.uid],
+
+                trainerapproved:approvedMap[feedback.uid] || 'Not found',
+                
+            }));
+        res.status(200).json({mergedData });
+        // res.status(200).json({wish_to_trainer_data });
+    } catch (error) {
+        console.error('Error :', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+// const getFeedback = async (req, res) => {
+//     try {
+//         // Retrieve all user progress data
+//         const wish_to_trainer = await Userprogress.find();
+
+//         // Map user progress data to a dictionary with user IDs as keys, including both wishtotraniner and trainerapproved
+//         const wishMap = wish_to_trainer.reduce((map, entry) => {
+//             map[entry.uid] = {
+//                 wishtotraniner: entry.wishtotraniner,  // Assuming this field exists
+//                 trainerapproved: entry.trainerapproved // Assuming this field exists
+//             };
+//             return map;
+//         }, {});
+
+//         // Retrieve all feedback data
+//         const feedback = await Feedback.find();
+
+//         // Extract user IDs from feedback entries
+//         const ids = feedback.map(value => value.uid);
+
+//         // Retrieve Lead data based on the extracted IDs
+//         const leadData = await conn.sobject("Lead")
+//             .find({ Id: { $in: ids } })
+//             .execute();
+
+//         // Map Lead data to a dictionary with IDs as keys
+//         const leadMap = leadData.reduce((map, lead) => {
+//             map[lead.Id] = lead.Name;
+//             return map;
+//         }, {});
+
+//         // Merge feedback with lead and wish data
+//         const mergedData = feedback.map((feedback) => ({
+//             ...feedback.toObject(),
+//             Name: leadMap[feedback.uid] || 'Not found', // Add name if it exists
+//             wishtotraniner: wishMap[feedback.uid]?.wishtotraniner || 'No', // Access wishtotraniner
+//             trainerapproved: wishMap[feedback.uid]?.trainerapproved || 'Not approved' // Access trainerapproved
+//         }));
+
+//         // Send the merged data as the response
+//         res.status(200).json({ mergedData });
+//     } catch (error) {
+//         console.error('Error:', error);
+//         res.status(500).json({ message: 'Internal server error' });
+//     }
+// };
+
+const want_to_be_trainer =async (req,res)=>{
+    const {  uid,wishtotrainer } = req.body;
+  
+    try {
+        
+        // If valid, proceed to update user status or create user
+        let user = await Userprogress.findOne({ uid });
+        if (!user) {
+           console.log('No user found')
+        } else {
+            user.wishtotraniner = wishtotrainer;
+        }
+  
+        await user.save();
+        res.status(200).json({ message: "data is submitted" });
+  
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+  }
+
+
+  const trainerApproval  =async (req,res)=>{
+    const {  uid,approval } = req.body;
+  
+    try {
+        
+        // If valid, proceed to update user status or create user
+        let user = await Userprogress.findOne({ uid });
+        if (!user) {
+           console.log('No user found')
+        } else {
+            user.trainerapproved = approval;
+        }
+  
+        await user.save();
+        res.status(200).json({ message: "data is submitted" });
+  
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+  }
+
 
 
 
@@ -125,5 +284,9 @@ const listUsersByState = asyncHandler(async (req, res) => {
 // Export all controller functions
 module.exports = {
     find_all_data,
-    listUsersByState
+    listUsersByState,
+    deleteSession,
+    getFeedback,
+    want_to_be_trainer,
+    trainerApproval
 };

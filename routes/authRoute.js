@@ -3,7 +3,7 @@
 const express = require("express");
 const { getEmail, totalusers, getContact, checkEmail, score, getscore } = require("../controller/userctrl");
 const { create_content, get_content_part1,  get_content, deleteInductionContent, getDataPartById, meetingsession, getmeetingsession, getmeetingsessionById, sendEmail, sendotp, create_feedback, register_session, userprogress, userprogressadd, getDataPartById_quize,  quiz_completed, genrate_invitation_code, skip_part2 } = require("../controller/inductionctrl");
-const { find_all_data, listUsersByState } = require("../controller/adminctrl");
+const { find_all_data, listUsersByState, deleteSession, getFeedback, want_to_be_trainer, trainerApproval } = require("../controller/adminctrl");
 
 
 const router = express.Router();
@@ -45,6 +45,10 @@ router.post("/skip_part2",skip_part2);
 // Admin route
 router.post("/find_all_data",find_all_data);
 router.get("/liststate",listUsersByState);
+router.delete('/deleteSession/:id',deleteSession);
+router.get('/getFeedback',getFeedback);
+router.put('/want_to_be_trainer',want_to_be_trainer);
+router.put('/trainerapproval',trainerApproval);
 
 
 // Export the router
